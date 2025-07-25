@@ -4,6 +4,7 @@ import NabvarCategorias from "../../components/ListarCategorias";
 import Carta from "../../components/Carta";
 import Imagen from "../../assets/notfound.png";
 import Logo from "../../assets/react.svg";
+import Boton from "../../components/Boton";
 
 const ListarProductos = () => {
   const [productos, setProductos] = useState<producto[]>([]);
@@ -24,6 +25,7 @@ const ListarProductos = () => {
       <div className="relative">
         <div className="w-[90%] mx-auto">
           <NabvarCategorias />
+
           <div className="grid grid-cols-4 gap-4">
             {productos.map((producto) => (
               <div className="col-span-1">

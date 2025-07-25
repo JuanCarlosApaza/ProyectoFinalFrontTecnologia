@@ -16,7 +16,6 @@ const ActualizarCategoria = () => {
     const obtenerDatos = async () => {
       try {
         const res = await fetch(`http://127.0.0.1:8000/api/categorias/buscar/${id}`);
-        if (!res.ok) throw new Error("Error al obtener la categoría");
         const data: categoria = await res.json();
         setCategoria({ nombre: data.nombre, imagen: null });
         setImagenActual(data.imagen);
