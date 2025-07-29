@@ -13,6 +13,7 @@ interface MostrarDatos {
   descuento: number;
   logo: string;
   empresalogo: string;
+  onclick:()=>void
 }
 
 const Carta: React.FC<MostrarDatos> = ({
@@ -25,6 +26,7 @@ const Carta: React.FC<MostrarDatos> = ({
   descuento,
   logo,
   empresalogo,
+  onclick
 }) => {
   return (
     <div className="card p-6 rounded-xl text-gray-700 font-sans shadow-xl bg-gradient-to-bl from-[#e0e4e5] to-[#f2f6f9] max-w-sm mx-auto">
@@ -35,7 +37,7 @@ const Carta: React.FC<MostrarDatos> = ({
           alt="Imagen del producto"
         />
         {descuento > 0 && (
-          <div className="absolute top-3 right-3 rounded-full bg-red-600 text-white text-xs font-bold px-3 py-1 shadow-md">
+          <div className="absolute  top-3 right-3 rounded-full bg-red-600 text-white text-lg font-bold px-3 py-1 shadow-md">
             -{descuento}%
           </div>
         )}
@@ -76,7 +78,7 @@ const Carta: React.FC<MostrarDatos> = ({
       </div>
 
       <div className="mt-5 flex justify-center">
-        <button className="bg-blue-950 hover:bg-blue-800 transition text-white rounded-2xl px-6 py-3 flex items-center gap-2">
+        <button onClick={onclick} className="bg-blue-950 hover:bg-blue-800 transition text-white rounded-2xl px-6 py-3 flex items-center gap-2">
           Agregar al Carrito
           <FaShoppingCart className="animate-bounce text-xl" />
         </button>

@@ -1,14 +1,32 @@
 import { useEffect, useState } from "react";
 import Tablas from "../../components/Tablas";
 import type { detalles } from "../../interfaces/Detalles";
+import Swal from "sweetalert2";
 
 const Listardetalless = () => {
   const [detalless, setdetalless] = useState<detalles[]>([]);
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/detalleventa")
-      .then((res) => res.json())
-      .then((data: detalles[]) => setdetalless(data));
-  }, []);
+  const token = localStorage.getItem("token");
+
+  fetch("http://127.0.0.1:8000/api/detalleventa", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Error al obtener los detalles");
+      return res.json();
+    })
+    .then((data: detalles[]) => setdetalless(data))
+    .catch((error) => {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: error.message || "Ocurrió un error inesperado",
+      });
+    });
+}, []);
+
   return (
     <>
       <Tablas

@@ -4,14 +4,39 @@ import type { empresa } from "../../interfaces/Empresa";
 import { Link } from "react-router-dom";
 import Boton from "../../components/Boton";
 import BotonEliminar from "../../components/BotonEliminar"; // importar componente
+import Swal from "sweetalert2";
 
 const ListarEmpresas = () => {
   const [empresas, setEmpresas] = useState<empresa[]>([]);
 
-  const obtenerEmpresas = () => {
-    fetch("http://127.0.0.1:8000/api/empresas")
-      .then((res) => res.json())
-      .then((data: empresa[]) => setEmpresas(data));
+  const obtenerEmpresas = async () => {
+    try {
+      const savedtoken = localStorage.getItem("token");
+
+      const res = await fetch("http://127.0.0.1:8000/api/empresasadmin", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${savedtoken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Error al obtener empresas.");
+      }
+
+      const data: empresa[] = await res.json();
+      setEmpresas(data);
+    } catch (error: any) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "No se pudieron cargar las empresas.",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    }
   };
 
   useEffect(() => {

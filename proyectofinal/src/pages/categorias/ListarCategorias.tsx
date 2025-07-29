@@ -4,15 +4,40 @@ import Tablas from "../../components/Tablas";
 import { Link } from "react-router-dom";
 import Boton from "../../components/Boton";
 import BotonEliminar from "../../components/BotonEliminar"; // Asegúrate de importar
+import Swal from "sweetalert2";
 
 const ListarCategorias = () => {
   const [categorias, setCategorias] = useState<categoria[]>([]);
 
-  const obtenerCategorias = () => {
-    fetch("http://127.0.0.1:8000/api/categorias")
-      .then((res) => res.json())
-      .then((data: categoria[]) => setCategorias(data));
-  };
+  const obtenerCategorias = async () => {
+  try {
+    const savedtoken = localStorage.getItem("token");
+
+    const res = await fetch("http://127.0.0.1:8000/api/categoriasadmin", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${savedtoken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Error al obtener categorías.");
+    }
+
+    const data: categoria[] = await res.json();
+    setCategorias(data);
+  } catch (error: any) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: error.message || "No se pudieron cargar las categorías.",
+      timer: 3000,
+      showConfirmButton: false,
+    });
+  }
+};
 
   useEffect(() => {
     obtenerCategorias();

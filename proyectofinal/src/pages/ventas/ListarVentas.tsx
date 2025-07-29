@@ -1,14 +1,32 @@
 import { useEffect, useState } from "react";
 import Tablas from "../../components/Tablas";
 import type { ventas } from "../../interfaces/Ventas";
+import Swal from "sweetalert2";
 
 const Listarventass = () => {
   const [ventass, setventass] = useState<ventas[]>([]);
-  useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/ventas")
-      .then((res) => res.json())
-      .then((data: ventas[]) => setventass(data));
-  }, []);
+ useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  fetch("http://127.0.0.1:8000/api/ventas", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Error al obtener las ventas");
+      return res.json();
+    })
+    .then((data: ventas[]) => setventass(data))
+    .catch((error) => {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "Ocurrió un problema al cargar ventas",
+      });
+    });
+}, []);
+
   return (
     <>
       <Tablas

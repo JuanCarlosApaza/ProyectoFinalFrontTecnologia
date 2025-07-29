@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 interface ComboProps {
   url: string;
-  onSelect: (id: number) => void; // ← nuevo
+  onSelect: (id: number) => void; 
 }
 interface opciones {
   id: number;
@@ -20,7 +20,7 @@ const ComboBox: React.FC<ComboProps> = ({ url, onSelect }) => {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = Number(e.target.value);
     setOpcionSeleccionada(value);
-    onSelect(value); // ← notificar al padre
+    onSelect(value); 
   };
 
   return (

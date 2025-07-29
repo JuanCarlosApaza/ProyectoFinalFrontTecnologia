@@ -25,6 +25,7 @@ export interface productoForm{
     cantidad:number,
     descripcion:string,
     imagen:File|null,
-    descuento:number
+    descuento:number,
+    estado:string
 
 };

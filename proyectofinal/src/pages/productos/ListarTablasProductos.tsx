@@ -4,15 +4,37 @@ import { Link } from "react-router-dom";
 import Boton from "../../components/Boton";
 import BotonEliminar from "../../components/BotonEliminar";
 import type { producto } from "../../interfaces/Producto";
+import Swal from "sweetalert2";
 
 const ListarproductosTablas = () => {
   const [productos, setproductos] = useState<producto[]>([]);
 
-  const obtenerProductos = () => {
-    fetch("http://127.0.0.1:8000/api/productos")
-      .then((res) => res.json())
-      .then((data: producto[]) => setproductos(data));
-  };
+  const obtenerProductos = async () => {
+  try {
+    const savedtoken = localStorage.getItem("token");
+    const res = await fetch("http://127.0.0.1:8000/api/productosadmin", {
+      method: "GET", 
+      headers: {
+        "Authorization": `Bearer ${savedtoken}`,
+        "Content-Type": "application/json" 
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Error al obtener productos.");
+    }
+    const data: producto[] = await res.json();
+    setproductos(data);
+  } catch (error: any) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: error.message || "No se pudieron cargar los productos.",
+    });
+  }
+};
+
 
   useEffect(() => {
     obtenerProductos();

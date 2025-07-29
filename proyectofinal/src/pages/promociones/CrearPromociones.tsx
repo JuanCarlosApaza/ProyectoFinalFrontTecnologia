@@ -3,6 +3,8 @@ import Formulario from "../../components/Formulario";
 import InputField from "../../components/Input";
 import type { promocionesForm } from "../../interfaces/Promociones";
 import ComboBox from "../../components/ComboBox";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const Crearpromociones = () => {
   const [promocioness, setpromocioness] = useState<promocionesForm>({
@@ -15,6 +17,7 @@ const Crearpromociones = () => {
       id_producto: id,
     }));
   };
+  const navigate = useNavigate();
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setpromocioness((prev) => ({
@@ -24,30 +27,49 @@ const Crearpromociones = () => {
     }
   };
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    const promocionesForm = new FormData();
-    promocionesForm.append("id_producto", String(promocioness.id_producto));
+  e.preventDefault();
 
-    promocionesForm.append("estado", "1");
-    if (promocioness.imagen) {
-      promocionesForm.append("imagen", promocioness.imagen);
-    }
-    const response = await fetch(
-      "http://127.0.0.1:8000/api/promociones/crear",
-      {
-        method: "POST",
-        body: promocionesForm,
-      }
-    );
+  const promocionesForm = new FormData();
+  promocionesForm.append("id_producto", String(promocioness.id_producto));
+  promocionesForm.append("estado", "1");
+  if (promocioness.imagen) {
+    promocionesForm.append("imagen", promocioness.imagen);
+  }
+
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/promociones/crear", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`, 
+      },
+      body: promocionesForm,
+    });
+
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("Error al crear :", errorData);
-      alert("Error al crear");
-      return;
+      const mensajes = errorData.errors
+        ? Object.values(errorData.errors).flat().join("\n")
+        : errorData.message || "Error desconocido";
+      throw new Error(mensajes);
     }
 
-    alert(" creado correctamente");
-  };
+    Swal.fire({
+      icon: "success",
+      title: "Éxito",
+      text: "Promoción creada correctamente",
+    });
+    navigate("/listarpromociones");
+  } catch (error: any) {
+    Swal.fire({
+      icon: "error",
+      title: "Error al crear promoción",
+      text: error.message || "Ocurrió un error inesperado",
+    });
+  }
+};
+
   return (
     <>
       <Formulario>
@@ -72,7 +94,7 @@ const Crearpromociones = () => {
           </div>
 
           <div className="mb-4">
-            <button className="" type="submit">
+            <button className="bg-blue-700 text-white px-4 py-2 rounded" type="submit">
               enviar
             </button>
           </div>

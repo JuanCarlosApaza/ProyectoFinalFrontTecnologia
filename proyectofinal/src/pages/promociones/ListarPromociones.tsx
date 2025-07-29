@@ -4,15 +4,33 @@ import type { promociones } from "../../interfaces/Promociones";
 import { Link } from "react-router-dom";
 import Boton from "../../components/Boton";
 import BotonEliminar from "../../components/BotonEliminar";
+import Swal from "sweetalert2";
 
 const ListarPromociones = () => {
   const [promocioness, setpromociones] = useState<promociones[]>([]);
 
-  const obtenerPromociones = () => {
-    fetch("http://127.0.0.1:8000/api/promociones")
-      .then((res) => res.json())
-      .then((data: promociones[]) => setpromociones(data));
-  };
+ const obtenerPromociones = () => {
+  const token = localStorage.getItem("token");
+
+  fetch("http://127.0.0.1:8000/api/promociones", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Error al obtener las promociones");
+      return res.json();
+    })
+    .then((data: promociones[]) => setpromociones(data))
+    .catch((error) => {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "Ocurrió un error al cargar promociones",
+      });
+    });
+};
+
 
   useEffect(() => {
     obtenerPromociones();

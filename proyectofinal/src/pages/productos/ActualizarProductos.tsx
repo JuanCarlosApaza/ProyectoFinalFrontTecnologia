@@ -1,12 +1,17 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import type { producto, productoForm } from "../../interfaces/Producto";
+import { useNavigate, useParams } from "react-router-dom";
 import Formulario from "../../components/Formulario";
 import InputField from "../../components/Input";
-import type { productoForm } from "../../interfaces/Producto";
 import ComboBox from "../../components/ComboBox";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
 
-const CrearProducto = () => {
+const ActualizarProductos = () => {
+  const [imagenActual, setImagenActual] = useState<string | null>(null);
+  const [empresas, setEmpresas] = useState<string>("");
+  const [categorias, setCategorias] = useState<string>("");
+  const navigate = useNavigate();
+
   const [productos, setProductos] = useState<productoForm>({
     nombre: "",
     id_empresa: 0,
@@ -16,11 +21,39 @@ const CrearProducto = () => {
     descripcion: "",
     imagen: null,
     descuento: 0,
-    estado: "stock", 
+    estado: "stock", // agregamos el estado aquí
   });
-  const navigate = useNavigate();
+  const { id } = useParams();
+  useEffect(() => {
+    const obtenerDatos = async () => {
+      try {
+        const res = await fetch(
+          `http://127.0.0.1:8000/api/productos/buscar/${id}`
+        );
+        const data: producto = await res.json();
+        setProductos({
+          nombre: data.nombre,
+          id_empresa: data.id_empresa,
+          id_categoria: data.id_categoria,
+          precio: data.precio,
+          cantidad: data.cantidad,
+          descripcion: data.descripcion,
+          descuento: data.descuento,
+          imagen: null,
+          estado: data.estado || "stock", // asignamos estado del backend si existe
+        });
+        setImagenActual(data.imagen);
+        setEmpresas(data.empresa.nombre);
+        setCategorias(data.categoria.nombre);
+      } catch (error) {
+        console.error("Error cargando categoría:", error);
+      }
+    };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (id) obtenerDatos();
+  }, [id]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setProductos((prev) => ({
       ...prev,
@@ -36,7 +69,6 @@ const CrearProducto = () => {
       }));
     }
   };
-
   const handleCategoriaChange = (id: number) => {
     setProductos((prev) => ({
       ...prev,
@@ -50,7 +82,6 @@ const CrearProducto = () => {
       id_empresa: id,
     }));
   };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const savedtoken = localStorage.getItem("token");
@@ -64,20 +95,23 @@ const CrearProducto = () => {
     productoForm.append("cantidad", String(productos.cantidad));
     productoForm.append("descripcion", productos.descripcion);
     productoForm.append("descuento", String(productos.descuento));
-    productoForm.append("estado", "stock");
+    productoForm.append("estado", productos.estado); // enviamos el estado
 
     if (productos.imagen) {
       productoForm.append("imagen", productos.imagen);
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/productos", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${savedtoken}`,
-        },
-        body: productoForm,
-      });
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/productos/actualizar/${id}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${savedtoken}`,
+          },
+          body: productoForm,
+        }
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -92,13 +126,13 @@ const CrearProducto = () => {
       Swal.fire({
         icon: "success",
         title: "Éxito",
-        text: "Producto creado correctamente.",
+        text: "Producto actualizado correctamente.",
       });
       navigate("/listarproductostables");
     } catch (error: any) {
       Swal.fire({
         icon: "error",
-        title: "Error al crear",
+        title: "Error al actualizar",
         text: error.message || "Ocurrió un error inesperado.",
       });
     }
@@ -142,9 +176,48 @@ const CrearProducto = () => {
           value={productos.descuento}
           onChange={handleChange}
         />
-        <ComboBox url="categorias" onSelect={handleCategoriaChange} />
-        <ComboBox url="empresas" onSelect={handleEmpresaChange} />
 
+        <div className="mb-4">
+          <label htmlFor="">Categoria Actual : {categorias}</label>
+          <ComboBox url="categorias" onSelect={handleCategoriaChange} />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="">Empresa Actual : {empresas}</label>
+          <ComboBox url="empresas" onSelect={handleEmpresaChange} />
+        </div>
+
+        <div className="mb-6">
+          <label
+            htmlFor="estado"
+            className="block text-sm font-semibold text-blue-900 mb-2"
+          >
+            Estado:
+          </label>
+          <select
+            id="estado"
+            name="estado"
+            value={productos.estado}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-blue-200 rounded-lg bg-white text-gray-800"
+          >
+            <option value="stock">Stock</option>
+            <option value="vencido">Vencido</option>
+            <option value="agotado">Agotado</option>
+          </select>
+        </div>
+
+        {imagenActual && (
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-blue-900 mb-2">
+              Imagen actual:
+            </label>
+            <img
+              src={`http://127.0.0.1:8000/storage/${imagenActual}`}
+              alt="Imagen actual"
+              className="w-32 h-32 object-cover border rounded"
+            />
+          </div>
+        )}
         <div className="mb-6">
           <label
             htmlFor="imagen"
@@ -175,4 +248,4 @@ const CrearProducto = () => {
   );
 };
 
-export default CrearProducto;
+export default ActualizarProductos;

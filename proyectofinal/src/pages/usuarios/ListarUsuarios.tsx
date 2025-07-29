@@ -9,11 +9,25 @@ const ListarUsuarios = () => {
   const [usuarioss, setusuarios] = useState<usuarios[]>([]);
 
   const obtenerUsuarios = () => {
-    fetch("http://127.0.0.1:8000/api/usuarios")
-      .then((res) => res.json())
-      .then((data: usuarios[]) => setusuarios(data));
-  };
-
+  const token = localStorage.getItem("token"); 
+  fetch("http://127.0.0.1:8000/api/usuarios", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, 
+    },
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error("No autorizado");
+      }
+      return res.json();
+    })
+    .then((data: usuarios[]) => setusuarios(data))
+    .catch((err) => {
+      console.error(err);
+    });
+};
   useEffect(() => {
     obtenerUsuarios();
   }, []);
